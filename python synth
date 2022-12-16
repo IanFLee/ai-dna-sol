@@ -1,10 +1,9 @@
-#This code creates a Tkinter window with a play button and a dropdown menu to select the desired waveform. When the play button is clicked, the generate_waveform function is called to generate the waveform samples based on the selected waveform and a 1 second duration, 440 Hz frequency, and 44100 Hz sample rate. The samples are then written to a WAV file and played using the aplay command.
-
-
 import tkinter as tk
 from tkinter import ttk
-from scipy.io.wavefile import write
+import scipy.signal as signal
+from scipy.io.wavfile import write
 import numpy as np
+import os
 
 # Set up the Tkinter window
 window = tk.Tk()
