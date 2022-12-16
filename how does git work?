@@ -1,0 +1,15 @@
+Git is a version control system that allows developers to track changes to files and collaborate on projects. It is widely used for managing source code and other types of files in software development projects.
+
+Here's how Git works:
+
+    When you start a new project or make changes to an existing project, you create a new "commit" in Git. A commit is a snapshot of the project at a specific point in time, and it includes the changes you have made since the last commit.
+
+    Each commit has a unique identifier, known as a "hash," which is generated based on the contents of the commit. This allows Git to keep track of all the changes that have been made to the project over time.
+
+    As you make more commits, Git creates a linear history of the project, with each commit building on the one before it. You can view this history at any time, and you can also see the differences between any two commits by using the "diff" command.
+
+    Git also allows you to create "branches" of the project, which are separate versions of the code that you can work on concurrently. For example, you might create a branch for a new feature or a bug fix, and then merge that branch back into the main project when it is ready.
+
+    Finally, Git allows you to collaborate with other developers by "pushing" and "pulling" commits to and from a shared repository. This allows multiple people to work on the same project at the same time, and it makes it easy to share changes and keep everyone's code up-to-date.
+
+Overall, Git is a powerful tool that helps developers manage and track changes to their projects, and it is an essential part of the modern software development workflow.
