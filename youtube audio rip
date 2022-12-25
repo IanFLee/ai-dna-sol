@@ -1,3 +1,30 @@
+UBUNTU TERMINAL
+
+To download the audio from a YouTube video using youtube-dl from the Ubuntu terminal, you will need to have youtube-dl installed on your system. You can install youtube-dl using the following command:
+
+sudo apt-get install youtube-dl
+
+Once youtube-dl is installed, you can use the following command to download the audio from a YouTube video:
+
+youtube-dl --extract-audio --audio-format mp3 https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+This will download the audio from the specified YouTube video and save it as an MP3 file in the current directory.
+
+You can specify the download location and file name using the -o option. For example:
+
+youtube-dl --extract-audio --audio-format mp3 -o '/path/to/downloads/%(title)s.%(ext)s' https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+This will download the audio file to the specified location, using the title of the video as the file name and the appropriate file extension (e.g. ".mp3").
+
+You can find a list of available options for youtube-dl by running the youtube-dl --help command.
+
+
+
+
+
+IN PYTHON
+
+
 To download the audio from a YouTube video using Python, you will need to use a third-party library such as youtube-dl. youtube-dl is a command-line utility that allows you to download videos from YouTube and other video-sharing websites.
 
 Here is an example Python script that demonstrates how to download the audio from a YouTube video using youtube-dl:
