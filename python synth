@@ -1,58 +1,151 @@
 import tkinter as tk
-from tkinter import ttk
 import scipy.signal as signal
 from scipy.io.wavfile import write
 import numpy as np
 import os
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+
+# Set the default number of harmonics to 1
+num_harmonics = 3
+
+# Set the default max fundamental frequency to 35 Hz
+fundamental_frequency = 35
+frequency_max = fundamental_frequency
+
+# Set the default filter value to 0
+filter_value = 0
+
 
 # Set up the Tkinter window
 window = tk.Tk()
 window.title("Audio Synthesizer")
 
-# Create the play button
-play_button = ttk.Button(window, text="Play")
-play_button.pack()
-
-# Create the waveform selection dropdown
-waveform_label = ttk.Label(window, text="Waveform:")
-waveform_label.pack()
-waveform_var = tk.StringVar()
-waveform_dropdown = ttk.OptionMenu(window, waveform_var, "Sine", "Triangle", "Sawtooth", "Square")
-waveform_dropdown.pack()
-
-# Function to generate the audio waveform
-def generate_waveform(waveform, duration, frequency, sample_rate):
-  # Generate the time points for the waveform
-  t = np.linspace(0, duration, duration * sample_rate, False)
-
-  # Generate the waveform samples
-  if waveform == "Sine":
-    samples = np.sin(2 * np.pi * frequency * t)
-  elif waveform == "Triangle":
-    samples = signal.sawtooth(2 * np.pi * frequency * t, 0.5)
-  elif waveform == "Sawtooth":
-    samples = signal.sawtooth(2 * np.pi * frequency * t)
-  elif waveform == "Square":
-    samples = signal.square(2 * np.pi * frequency * t)
-
-  # Scale the samples to the desired range
-  samples *= 32767
-  samples = np.int16(samples)
-
-  return samples
 
 # Function to play the audio when the play button is clicked
 def play_audio():
   # Get the selected waveform and generate the waveform samples
   waveform = waveform_var.get()
-  samples = generate_waveform(waveform, 1, 440, 44100)
+  samples = generate_waveform(waveform, 1, fundamental_frequency, 44100, num_harmonics)
 
   # Write the waveform to a WAV file and play it
   write("temp.wav", 44100, samples)
   os.system("aplay temp.wav")
 
-# Set the play button to call the play_audio function when clicked
-play_button.config(command=play_audio)
 
-# Run the Tkinter event loop
+# Create the play button
+play_button = tk.Button(window, text="Play", command=play_audio)
+play_button.pack()
+
+# Create the waveform selection dropdown
+waveform_label = tk.Label(window, text="Waveform:")
+waveform_label.pack()
+waveform_var = tk.StringVar()
+waveform_menu = tk.OptionMenu(window, waveform_var, "Sine", "Triangle", "Sawtooth", "Square")
+waveform_menu.pack()
+
+# Function to update the number of harmonics when the dial or scale is changed
+def update_num_harmonics(value):
+  global num_harmonics
+  num_harmonics = int(value)
+
+# Function to update the fundamental frequency when the dial or slider is changed
+def update_fundamental_frequency(value):
+  global fundamental_frequency
+  fundamental_frequency = int(value)
+  
+# Function to update the filter when the dial or scale is changed
+def update_filter(value):
+  global filter_value
+  filter_value = int(value)
+
+# Create the dial or scale for selecting the number of harmonics
+harmonics_label = tk.Label(window, text="Harmonics:")
+harmonics_label.pack()
+harmonics_scale = tk.Scale(window, from_=1, to=64, orient=tk.HORIZONTAL, command=update_num_harmonics)
+harmonics_scale.set(3)
+harmonics_scale.pack()
+
+# Create the dial or scale for selecting the fundamental frequency
+frequency_label = tk.Label(window, text="Frequency:")
+frequency_label.pack()
+frequency_scale = tk.Scale(window, from_=1, to=frequency_max, orient=tk.HORIZONTAL, command=update_fundamental_frequency)
+frequency_scale.set(frequency_max)
+frequency_scale.pack()
+
+# Create the dial or scale for the filter
+filter_label = tk.Label(window, text="Filter:")
+filter_label.pack()
+filter_scale = tk.Scale(window, from_=-100, to=100, orient=tk.HORIZONTAL, command=update_filter)
+filter_scale.set(0)
+filter_scale.pack()
+
+
+# Set up the Matplotlib figure and axes
+figure = Figure(figsize=(5, 3), dpi=100)
+axes = figure.add_subplot(111)
+
+
+# Function to generate the audio waveform
+
+# This function takes in five arguments:
+
+#     waveform: The type of waveform to generate (either "Sine", "Triangle", "Sawtooth", or "Square").
+#     duration: The duration of the waveform in seconds.
+#     frequency: The fundamental frequency of the waveform in Hz.
+#     sample_rate: The sample rate of the waveform in samples per second.
+#     num_harmonics: The number of harmonics to include in the waveform.
+
+# It returns a NumPy array of samples representing the generated waveform.
+#The samples are scaled to the desired range and converted to 16-bit integers, which is the standard format for WAV files.
+#The function also updates the Matplotlib plot with the new waveform.
+def generate_waveform(waveform, duration, frequency, sample_rate, num_harmonics):
+
+  # Generate the time points for the waveform
+  t = np.linspace(0, duration, duration * sample_rate, False)
+
+  # Initialize the samples array with the fundamental frequency
+  samples = np.sin(2 * np.pi * frequency * t)
+  
+  # Apply the filter to the samples
+  if filter_value < 0:
+    # Low pass filter
+    samples[int(len(samples) * (100 + filter_value) / 200):] = 0
+  elif filter_value > 0:
+    # High pass filter
+    samples[:int(len(samples) * (100 - filter_value) / 200)] = 0
+
+  # Generate the additional harmonics
+  for i in range(2, num_harmonics + 1):
+    samples += np.sin(2 * np.pi * i * frequency * t)
+
+  # Apply the selected waveform to the samples
+  if waveform == "Triangle":
+    # Generate a triangle waveform using the samples array
+    samples = np.abs(samples) - np.max(np.abs(samples)) / 2
+  elif waveform == "Sawtooth":
+    # Generate a sawtooth waveform using the samples array
+    samples = np.abs(samples)
+  elif waveform == "Square":
+    # Generate a square waveform using the samples array
+    samples[samples >= 0] = 1
+    samples[samples < 0] = -1
+
+  # Scale the samples to the desired range
+  samples *= 32767
+  samples = np.int16(samples)
+
+  # Update the Matplotlib plot with the new waveform
+  axes.clear()
+  axes.plot(t, samples)
+  figure.canvas.draw()
+
+  return samples
+
+
+
+  
+
 window.mainloop()
